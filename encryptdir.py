@@ -112,8 +112,9 @@ def encrypt_file(source):
 	# gz
 	
 	outfile = '{0}/{1}'.format(TMPDIR, getOutputFileName(source))
-	print('TODO gzipping {0}'.format(outfile))
-	call([ 'cp', '{0}/{1}'.format(INPUTDIR, source), outfile ])
+
+	with open(outfile, 'w') as stream:
+		call([ 'gzip', '-9', '--keep', '{0}/{1}'.format(INPUTDIR, source), '--stdout' ], stdout=stream)
 	
 	# encrypt file
 	
