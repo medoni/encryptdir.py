@@ -1,4 +1,5 @@
 
+import argparse
 import os
 import shutil
 
@@ -16,8 +17,28 @@ AES_KEY_FILE_SIZE=256
 
 #======================================================
 def main():
-	encrypt()
+	#encrypt()
 	#_generate_priv_pub_key_pair()
+
+	parser = argparse.ArgumentParser(prog='encryptdir.py')
+
+	subparsers = parser.add_subparsers()
+	subparsers.required = True
+	subparsers.dest = 'command'
+
+	clean_args = subparsers.add_parser('clean', help='cleans local tmp folder')
+	clean_args.add_argument('--include-outdir', action='store_true', help='cleans also output folder')
+
+	encrypt_args = subparsers.add_parser('encrypt', help='encrypts a folder')
+
+	args = parser.parse_args()
+	#print(args)
+	if args.command == 'clean':
+		clean(include_outdir=args.include_outdir)
+	elif args.command == 'encrypt':
+		encrypt()
+	else:
+		raise Exception('Invalid command "{0}"'.format(args.command))
 
 
 
@@ -56,10 +77,14 @@ def prepair():
 
 
 #======================================================
-def clean():
+def clean(include_outdir=False):
 	if os.path.exists(TMPDIR):
 		print("Deleting {0}".format(TMPDIR))
 		shutil.rmtree(TMPDIR)
+
+	if include_outdir and os.path.exists(OUTPUTDIR):
+		print('Deleting {0}'.format(OUTPUTDIR))
+		shutil.rmtree(OUTPUTDIR)
 
 #======================================================
 def encrypt():
@@ -88,11 +113,11 @@ def encrypt_file(source):
 	
 	outfile = '{0}/{1}'.format(TMPDIR, getOutputFileName(source))
 	print('TODO gzipping {0}'.format(outfile))
-	call([ 'cp', source, outfile ])
+	call([ 'cp', '{0}/{1}'.format(INPUTDIR, source), outfile ])
 	
 	# encrypt file
 	
-	encoutfile = outfile = '{0}/{1}'.format(OUTPUTDIR, getEncryptedOutputFileName(source))
+	encoutfile = '{0}/{1}'.format(OUTPUTDIR, getEncryptedOutputFileName(source))
 
 	call([ 'openssl', 'aes-256-cbc', '-in', outfile, '-out', encoutfile, '-pass', 'file:{0}'.format(keyfile) ])
 
@@ -137,4 +162,5 @@ def getEncryptedKeyFileName(input):
 
 
 #======================================================
-main()
+if __name__ == '__main__':
+    main()
