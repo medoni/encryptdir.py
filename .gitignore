@@ -5,3 +5,6 @@
 
 *.pem
 *.pem.pub
+
+.DS_Store
+._.DS_Store
