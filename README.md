@@ -22,4 +22,4 @@ a python script to encrypt all files in a directory with public rsa key.
 	
 	```
 		python encryptdir.py gen-test-files 5
-	``
+	```
