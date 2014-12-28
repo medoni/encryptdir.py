@@ -10,10 +10,11 @@ INPUTDIR="./input"
 OUTPUTDIR="./output"
 TMPDIR="./tmp"
 
-KEY_FILE="./mykey.pem"
-PUB_KEY_FILE="./mykey.pem.pub"
+DEFAULT_KEY_FILE="./mykey.pem"
+DEFAULT_PUB_KEY_FILE="./mykey.pem.pub"
 
 AES_KEY_FILE_SIZE=256
+RSA_KEY_SIZE=4096
 
 #======================================================
 def main():
@@ -31,12 +32,18 @@ def main():
 
 	encrypt_args = subparsers.add_parser('encrypt', help='encrypts a folder')
 
+	priv_pub_key_args = subparsers.add_parser('gen-keys', help='generates a rsa key pair')
+	priv_pub_key_args.add_argument('-s', '--key-size', help='key size. Default {0}'.format(RSA_KEY_SIZE), default=RSA_KEY_SIZE, metavar='n', type=int, nargs='?')
+	priv_pub_key_args.add_argument('-o', '--key-file', help='name of the output key filename. Default {0}'.format(DEFAULT_KEY_FILE), metavar='key.pem', type=str )
+
 	args = parser.parse_args()
 	#print(args)
 	if args.command == 'clean':
 		clean(include_outdir=args.include_outdir)
 	elif args.command == 'encrypt':
 		encrypt()
+	elif args.command == 'gen-keys':
+		_generate_priv_pub_key_pair(key_size=args.key_size, key_file=args.key_file)
 	else:
 		raise Exception('Invalid command "{0}"'.format(args.command))
 
@@ -50,13 +57,19 @@ def _generate_test_data():
 		with open('{0}/{1}'.format(INPUTDIR, filename), 'w') as myfile:
 			myfile.write('lorem ipsum {0}\n'.format(i))
 
-def _generate_priv_pub_key_pair():
+def _generate_priv_pub_key_pair(key_size=RSA_KEY_SIZE, key_file=None, key_pub_file=None):
+	if key_file==None:
+		key_file = DEFAULT_KEY_FILE
+
+	if key_pub_file==None:
+		key_pub_file = '{0}.pub'.format(key_file)
+
 	# generate key pair
-	#call([ 'openssl', 'genrsa', '-out', KEY_FILE, '4096' ])
+	call([ 'openssl', 'genrsa', '-out', key_file, str(key_size) ])
 
 	# extract public key 
-	with open(PUB_KEY_FILE, 'w') as stdout:
-		call([ 'openssl', 'rsa', '-in', KEY_FILE, '-pubout' ], stdout=stdout)
+	with open(key_pub_file, 'w') as stdout:
+		call([ 'openssl', 'rsa', '-in', key_file, '-pubout' ], stdout=stdout)
 
 
 #======================================================
@@ -107,17 +120,15 @@ def encrypt_file(source):
 	# encrypt key file > OUTPUTDIR/xyz.key.enc
 	enckeyfile = '{0}/{1}'.format(OUTPUTDIR, getEncryptedKeyFileName(source))
 
-	call([ 'openssl', 'rsautl', '-encrypt', '-pubin', '-inkey', PUB_KEY_FILE, '-in', keyfile, '-out', enckeyfile])
+	call([ 'openssl', 'rsautl', '-encrypt', '-pubin', '-inkey', DEFAULT_PUB_KEY_FILE, '-in', keyfile, '-out', enckeyfile])
 	
 	# gz
-	
 	outfile = '{0}/{1}'.format(TMPDIR, getOutputFileName(source))
 
 	with open(outfile, 'w') as stream:
 		call([ 'gzip', '-9', '--keep', '{0}/{1}'.format(INPUTDIR, source), '--stdout' ], stdout=stream)
 	
 	# encrypt file
-	
 	encoutfile = '{0}/{1}'.format(OUTPUTDIR, getEncryptedOutputFileName(source))
 
 	call([ 'openssl', 'aes-256-cbc', '-in', outfile, '-out', encoutfile, '-pass', 'file:{0}'.format(keyfile) ])
