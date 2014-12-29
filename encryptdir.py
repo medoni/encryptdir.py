@@ -2,6 +2,7 @@
 import argparse
 import os
 import random
+import re
 import shutil
 
 from subprocess import call
@@ -40,6 +41,11 @@ def main():
 
 	encrypt_args = subparsers.add_parser('encrypt', help='encrypts a folder')
 
+	decrypt_args = subparsers.add_parser('decrypt', help='decrypts an encrypted folder')
+	decrypt_args.add_argument('-in', metavar='input-folder', help='input folder', dest='input_folder')
+	decrypt_args.add_argument('-out', metavar='output-folder', help='output folder', dest='output_folder')
+
+
 	priv_pub_key_args = subparsers.add_parser('gen-keys', help='generates a rsa key pair')
 	priv_pub_key_args.add_argument('-s', '--key-size', help='key size. Default {0}'.format(RSA_KEY_SIZE), default=RSA_KEY_SIZE, metavar='n', type=int, nargs='?')
 	priv_pub_key_args.add_argument('-o', '--key-file', help='name of the output key filename. Default {0}'.format(DEFAULT_KEY_FILE), metavar='key.pem', type=str )
@@ -53,6 +59,8 @@ def main():
 		clean(include_outdir=args.include_outdir)
 	elif args.command == 'encrypt':
 		encrypt()
+	elif args.command == 'decrypt':
+		decrypt(args.input_folder, args.output_folder)
 	elif args.command == 'gen-keys':
 		_generate_priv_pub_key_pair(key_size=args.key_size, key_file=args.key_file)
 	elif args.command == 'gen-test-files':
@@ -64,6 +72,10 @@ def main():
 
 #======================================================
 def _generate_test_data(number=5):
+
+	if not os.path.exists(INPUTDIR):
+		print('Input dir "{0}" not found'.format(INPUTDIR))
+		exit(1)
 
 	lorem_words = [
 		'Lorem', 'ipsum', 'dolor', 'sit', 'amet,', 'consectetur', 'adipiscing', 'elit.', 'Donec', 'a', 'diam', 'lectus.', 'Sed', 'sit', 'amet', 'ipsum', 'mauris.', 'Maecenas', 'congue', 'ligula', 'ac', 'quam', 'viverra', 'nec', 'consectetur', 'ante', 'hendrerit.', 'Donec', 'et', 'mollis', 'dolor.', 'Praesent', 'et', 'diam', 'eget', 'libero', 'egestas', 'mattis', 'sit', 'amet', 'vitae', 'augue.', 'Nam', 'tincidunt', 'congue', 'enim,', 'ut', 'porta', 'lorem', 'lacinia', 'consectetur.', 'Donec', 'ut', 'libero', 'sed', 'arcu', 'vehicula', 'ultricies', 'a', 'non', 'tortor.', 'Lorem', 'ipsum', 'dolor', 'sit', 'amet,', 'consectetur', 'adipiscing', 'elit.', 'Aenean', 'ut', 'gravida', 'lorem.', 'Ut', 'turpis', 'felis,', 'pulvinar', 'a', 'semper', 'sed,', 'adipiscing', 'id', 'dolor.', 'Pellentesque', 'auctor', 'nisi', 'id', 'magna', 'consequat', 'sagittis.', 'Curabitur', 'dapibus', 'enim', 'sit', 'amet', 'elit', 'pharetra', 'tincidunt', 'feugiat', 'nisl', 'imperdiet.', 'Ut', 'convallis', 'libero', 'in', 'urna', 'ultrices', 'accumsan.', 'Donec', 'sed', 'odio', 'eros.', 'Donec', 'viverra', 'mi', 'quis', 'quam', 'pulvinar', 'at', 'malesuada', 'arcu', 'rhoncus.', 'Cum', 'sociis', 'natoque', 'penatibus', 'et', 'magnis', 'dis', 'parturient', 'montes,', 'nascetur', 'ridiculus', 'mus.', 'In', 'rutrum', 'accumsan', 'ultricies.', 'Mauris', 'vitae', 'nisi', 'at', 'sem', 'facilisis', 'semper', 'ac', 'in', 'est.', 'Vivamus', 'fermentum', 'semper', 'porta.', 'Nunc', 'diam', 'velit,', 'adipiscing', 'ut', 'tristique', 'vitae,', 'sagittis', 'vel', 'odio.', 'Maecenas', 'convallis', 'ullamcorper', 'ultricies.', 'Curabitur', 'ornare,', 'ligula', 'semper', 'consectetur', 'sagittis,', 'nisi', 'diam', 'iaculis', 'velit,', 'id', 'fringilla', 'sem', 'nunc', 'vel', 'mi.', 'Nam', 'dictum,', 'odio', 'nec', 'pretium', 'volutpat,', 'arcu', 'ante', 'placerat', 'erat,', 'non', 'tristique', 'elit', 'urna', 'et', 'turpis.', 'Quisque', 'mi', 'metus,', 'ornare', 'sit', 'amet', 'fermentum', 'et,', 'tincidunt', 'et', 'orci.', 'Fusce', 'eget', 'orci', 'a', 'orci', 'congue', 'vestibulum.', 'Ut', 'dolor', 'diam,', 'elementum', 'et', 'vestibulum', 'eu,', 'porttitor', 'vel', 'elit.', 'Curabitur', 'venenatis', 'pulvinar', 'tellus', 'gravida', 'ornare.', 'Sed', 'et', 'erat', 'faucibus', 'nunc', 'euismod', 'ultricies', 'ut', 'id', 'justo.', 'Nullam', 'cursus', 'suscipit', 'nisi,', 'et', 'ultrices', 'justo', 'sodales', 'nec.', 'Fusce', 'venenatis', 'facilisis', 'lectus', 'ac', 'semper.', 'Aliquam', 'at', 'massa', 'ipsum.', 'Quisque', 'bibendum', 'purus', 'convallis', 'nulla', 'ultrices', 'ultricies.', 'Nullam', 'aliquam,', 'mi', 'eu', 'aliquam', 'tincidunt,', 'purus', 'velit', 'laoreet', 'tortor,', 'viverra', 'pretium', 'nisi', 'quam', 'vitae', 'mi.', 'Fusce', 'vel', 'volutpat', 'elit.', 'Nam', 'sagittis', 'nisi', 'dui.'
@@ -94,7 +106,7 @@ def _generate_priv_pub_key_pair(key_size=RSA_KEY_SIZE, key_file=None, key_pub_fi
 
 
 #======================================================
-def prepair():
+def prepair(out_dir=OUTPUTDIR):
 
 	# cleaning workspace
 	clean()
@@ -105,9 +117,9 @@ def prepair():
 		os.makedirs(TMPDIR)
 
 	# check output dir
-	if not os.path.exists(OUTPUTDIR):
-		print("Creating {0}".format(OUTPUTDIR))
-		os.makedirs(OUTPUTDIR)
+	if not os.path.exists(out_dir):
+		print("Creating {0}".format(out_dir))
+		os.makedirs(out_dir)
 
 
 #======================================================
@@ -164,6 +176,53 @@ def encrypt_file(source):
 	# move to ./output/xyz.gz.enc
 	shutil.move(sym_inc_file, encoutfile)
 
+#======================================================
+def decrypt(in_dir, out_dir):
+	if in_dir == None:
+		print('No input folder given.')
+		exit(1)
+
+	if out_dir == None:
+		print('No output folder given')
+		exit(1)
+
+	if not os.path.exists(in_dir):
+		print('Input folder "{0}" does not exists'.format(in_dir))
+		exit(1)
+
+	prepair(out_dir=out_dir)
+
+	for file, file_key, org_name in getDecryptingFiles(in_dir):
+		decrypt_file(file, file_key, org_name, in_dir, out_dir)
+	
+
+#======================================================
+def decrypt_file(file, file_key, org_name, in_dir, out_dir):
+	print('Decrypting {0}'.format(file))
+
+	source_file = '{0}/{1}'.format(in_dir, file)
+	source_file_key = '{0}/{1}'.format(in_dir, file_key)
+
+	output_file = '{0}/{1}'.format(out_dir, org_name)
+
+	#print('\tDecrypting key file {0}'.format(file_key))
+	tmp_file_key = '{0}/{1}.key'.format(TMPDIR, org_name)
+
+	call([ 'openssl', 'rsautl', '-decrypt', '-inkey', DEFAULT_KEY_FILE, '-in', source_file_key, '-out', tmp_file_key])
+
+	#print('\tDecrypting file with symmetric cascade')
+	sym_inc_file = '{0}/{1}.in'.format(TMPDIR, file)
+	sym_out_file = '{0}/{1}.out'.format(TMPDIR, file)
+
+	shutil.copyfile(source_file, sym_inc_file)
+	for sym_alg in reversed(SYMMETRIC_ENCRYPTION_CASC):
+		call([ 'openssl', sym_alg, '-d', '-in', sym_inc_file, '-out', sym_out_file, '-pass', 'file:{0}'.format(tmp_file_key) ])
+		shutil.move(sym_out_file, sym_inc_file)
+
+	#Ungzip file
+	with open(output_file, 'w') as stream:
+		call([ 'gzip', '-d', sym_inc_file, '--stdout' ], stdout=stream)
+	
 
 
 #======================================================
@@ -172,6 +231,16 @@ def getNewFiles():
 		if not os.path.exists(getEncryptedOutputFileName(sourcefile)):
 			yield sourcefile
 
+#======================================================
+def getDecryptingFiles(dir):
+	for item in os.listdir(dir):
+		mtch = re.match(r'(.*)\.key\.enc$', item)
+		if mtch:
+			file_key = mtch.group(0)
+			file = '{0}.gz.enc'.format(mtch.group(1))
+
+			if os.path.exists('{0}/{1}'.format(dir, file)):
+				yield file, file_key, mtch.group(1)
 
 #======================================================
 def getOutputFileName(input):

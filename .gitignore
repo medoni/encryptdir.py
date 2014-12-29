@@ -2,6 +2,7 @@
 /input/
 /tmp/
 /output/
+/output2/
 
 *.pem
 *.pem.pub
