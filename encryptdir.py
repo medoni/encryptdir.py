@@ -17,6 +17,13 @@ DEFAULT_PUB_KEY_FILE="./mykey.pem.pub"
 AES_KEY_FILE_SIZE=256
 RSA_KEY_SIZE=4096
 
+# used symmetric encryption algorithm
+SYMMETRIC_ENCRYPTION_CASC = [
+	'aes-256-cbc',
+	'bf',
+	'cast5-cbc'
+]
+
 #======================================================
 def main():
 	#encrypt()
@@ -145,7 +152,19 @@ def encrypt_file(source):
 	# encrypt file
 	encoutfile = '{0}/{1}'.format(OUTPUTDIR, getEncryptedOutputFileName(source))
 
-	call([ 'openssl', 'aes-256-cbc', '-in', outfile, '-out', encoutfile, '-pass', 'file:{0}'.format(keyfile) ])
+	sym_inc_file = '{0}.in'.format(outfile)
+	sym_out_file = '{0}.out'.format(outfile)
+
+	shutil.move(outfile, sym_inc_file)
+
+	for sym_alg in SYMMETRIC_ENCRYPTION_CASC:
+		call([ 'openssl', sym_alg, '-in', sym_inc_file, '-out', sym_out_file, '-pass', 'file:{0}'.format(keyfile) ])
+		shutil.move(sym_out_file, sym_inc_file)
+
+	# move to ./output/xyz.gz.enc
+	shutil.move(sym_inc_file, encoutfile)
+
+
 
 #======================================================
 def getNewFiles():
