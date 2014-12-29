@@ -1,6 +1,7 @@
 
 import argparse
 import os
+import random
 import shutil
 
 from subprocess import call
@@ -36,6 +37,9 @@ def main():
 	priv_pub_key_args.add_argument('-s', '--key-size', help='key size. Default {0}'.format(RSA_KEY_SIZE), default=RSA_KEY_SIZE, metavar='n', type=int, nargs='?')
 	priv_pub_key_args.add_argument('-o', '--key-file', help='name of the output key filename. Default {0}'.format(DEFAULT_KEY_FILE), metavar='key.pem', type=str )
 
+	gen_test_args = subparsers.add_parser('gen-test-files', help='generates some lorem ipsum test file')
+	gen_test_args.add_argument('count', metavar='number', type=int, help='Count of test files should be created')
+
 	args = parser.parse_args()
 	#print(args)
 	if args.command == 'clean':
@@ -44,18 +48,28 @@ def main():
 		encrypt()
 	elif args.command == 'gen-keys':
 		_generate_priv_pub_key_pair(key_size=args.key_size, key_file=args.key_file)
+	elif args.command == 'gen-test-files':
+		_generate_test_data(number=args.count)
 	else:
 		raise Exception('Invalid command "{0}"'.format(args.command))
 
 
 
 #======================================================
-def _generate_test_data():
+def _generate_test_data(number=5):
+
+	lorem_words = [
+		'Lorem', 'ipsum', 'dolor', 'sit', 'amet,', 'consectetur', 'adipiscing', 'elit.', 'Donec', 'a', 'diam', 'lectus.', 'Sed', 'sit', 'amet', 'ipsum', 'mauris.', 'Maecenas', 'congue', 'ligula', 'ac', 'quam', 'viverra', 'nec', 'consectetur', 'ante', 'hendrerit.', 'Donec', 'et', 'mollis', 'dolor.', 'Praesent', 'et', 'diam', 'eget', 'libero', 'egestas', 'mattis', 'sit', 'amet', 'vitae', 'augue.', 'Nam', 'tincidunt', 'congue', 'enim,', 'ut', 'porta', 'lorem', 'lacinia', 'consectetur.', 'Donec', 'ut', 'libero', 'sed', 'arcu', 'vehicula', 'ultricies', 'a', 'non', 'tortor.', 'Lorem', 'ipsum', 'dolor', 'sit', 'amet,', 'consectetur', 'adipiscing', 'elit.', 'Aenean', 'ut', 'gravida', 'lorem.', 'Ut', 'turpis', 'felis,', 'pulvinar', 'a', 'semper', 'sed,', 'adipiscing', 'id', 'dolor.', 'Pellentesque', 'auctor', 'nisi', 'id', 'magna', 'consequat', 'sagittis.', 'Curabitur', 'dapibus', 'enim', 'sit', 'amet', 'elit', 'pharetra', 'tincidunt', 'feugiat', 'nisl', 'imperdiet.', 'Ut', 'convallis', 'libero', 'in', 'urna', 'ultrices', 'accumsan.', 'Donec', 'sed', 'odio', 'eros.', 'Donec', 'viverra', 'mi', 'quis', 'quam', 'pulvinar', 'at', 'malesuada', 'arcu', 'rhoncus.', 'Cum', 'sociis', 'natoque', 'penatibus', 'et', 'magnis', 'dis', 'parturient', 'montes,', 'nascetur', 'ridiculus', 'mus.', 'In', 'rutrum', 'accumsan', 'ultricies.', 'Mauris', 'vitae', 'nisi', 'at', 'sem', 'facilisis', 'semper', 'ac', 'in', 'est.', 'Vivamus', 'fermentum', 'semper', 'porta.', 'Nunc', 'diam', 'velit,', 'adipiscing', 'ut', 'tristique', 'vitae,', 'sagittis', 'vel', 'odio.', 'Maecenas', 'convallis', 'ullamcorper', 'ultricies.', 'Curabitur', 'ornare,', 'ligula', 'semper', 'consectetur', 'sagittis,', 'nisi', 'diam', 'iaculis', 'velit,', 'id', 'fringilla', 'sem', 'nunc', 'vel', 'mi.', 'Nam', 'dictum,', 'odio', 'nec', 'pretium', 'volutpat,', 'arcu', 'ante', 'placerat', 'erat,', 'non', 'tristique', 'elit', 'urna', 'et', 'turpis.', 'Quisque', 'mi', 'metus,', 'ornare', 'sit', 'amet', 'fermentum', 'et,', 'tincidunt', 'et', 'orci.', 'Fusce', 'eget', 'orci', 'a', 'orci', 'congue', 'vestibulum.', 'Ut', 'dolor', 'diam,', 'elementum', 'et', 'vestibulum', 'eu,', 'porttitor', 'vel', 'elit.', 'Curabitur', 'venenatis', 'pulvinar', 'tellus', 'gravida', 'ornare.', 'Sed', 'et', 'erat', 'faucibus', 'nunc', 'euismod', 'ultricies', 'ut', 'id', 'justo.', 'Nullam', 'cursus', 'suscipit', 'nisi,', 'et', 'ultrices', 'justo', 'sodales', 'nec.', 'Fusce', 'venenatis', 'facilisis', 'lectus', 'ac', 'semper.', 'Aliquam', 'at', 'massa', 'ipsum.', 'Quisque', 'bibendum', 'purus', 'convallis', 'nulla', 'ultrices', 'ultricies.', 'Nullam', 'aliquam,', 'mi', 'eu', 'aliquam', 'tincidunt,', 'purus', 'velit', 'laoreet', 'tortor,', 'viverra', 'pretium', 'nisi', 'quam', 'vitae', 'mi.', 'Fusce', 'vel', 'volutpat', 'elit.', 'Nam', 'sagittis', 'nisi', 'dui.'
+	]
 	
-	for i in range(5):
+	for i in range(number):
 		filename="test-{0}".format(i)
 		with open('{0}/{1}'.format(INPUTDIR, filename), 'w') as myfile:
-			myfile.write('lorem ipsum {0}\n'.format(i))
+			for word in lorem_words:
+				myfile.write('{0}{1} '.format(word, str(int(random.random() * 99)) ))
+
+			myfile.write('\n')
+				
 
 def _generate_priv_pub_key_pair(key_size=RSA_KEY_SIZE, key_file=None, key_pub_file=None):
 	if key_file==None:
