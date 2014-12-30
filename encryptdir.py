@@ -153,6 +153,9 @@ def encrypt():
     for file in getNewFiles():
         encrypt_file(file)
 
+    # clean tmp
+    shutil.rmtree(TMPDIR)
+
 #======================================================
 def encrypt_file(source):
 
@@ -190,6 +193,9 @@ def encrypt_file(source):
     # move to ./output/xyz.gz.enc
     shutil.move(sym_inc_file, encoutfile)
 
+    # clean tmp
+    removeFile(keyfile)
+
 #======================================================
 def decrypt(in_dir, out_dir):
     if in_dir == None:
@@ -209,6 +215,8 @@ def decrypt(in_dir, out_dir):
     for file, file_key, org_name in getDecryptingFiles(in_dir):
         decrypt_file(file, file_key, org_name, in_dir, out_dir)
     
+    # clean tmp
+    shutil.rmtree(TMPDIR)
 
 #======================================================
 def decrypt_file(file, file_key, org_name, in_dir, out_dir):
@@ -236,6 +244,10 @@ def decrypt_file(file, file_key, org_name, in_dir, out_dir):
     #Ungzip file
     with open(output_file, 'w') as stream:
         call([ 'gzip', '-d', sym_inc_file, '--stdout' ], stdout=stream)
+
+    # clean tmp
+    removeFile(tmp_file_key)
+    removeFile(sym_inc_file)
     
 #======================================================
 def test():
@@ -311,7 +323,8 @@ def getKeyFileName(input):
 def getEncryptedKeyFileName(input):
     return '{0}.key.enc'.format(input)
 
-
+def removeFile(file):
+    os.remove(file)
 
 
 
