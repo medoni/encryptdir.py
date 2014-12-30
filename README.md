@@ -6,7 +6,7 @@ a python script to encrypt all files in a directory with a public rsa key.
 ## Usage
 1. Generate a rsa key pair
 
-    ```
+    ```bash
     python encryptdir.py gen-keys
     ```
 
@@ -14,23 +14,23 @@ a python script to encrypt all files in a directory with a public rsa key.
 
 1. Create your input folder if not exists
 
-    ```
+    ```bash
     mkdir input
     ```
 
 1. Create some test data (optional)
     
-    ```
+    ```bash
     python encryptdir.py gen-test-files 5
     ```
 
 1. Encrypting
 
-    ```
+    ```bash
     python encryptdir.py encrypt
     ```
 
-    This encrypts all files in ```./input/``` to ```./output/```. Files which are exists in output will be ignored. After encrypting, the output folder looks like:
+    This encrypts all files in `./input/` to `./output/`. Files which are exists in output will be ignored. After encrypting, the output folder looks like:
 
     ```
     root@FreeBSD:~/encryptdir # ls -la output
@@ -54,14 +54,14 @@ a python script to encrypt all files in a directory with a public rsa key.
 
 1. Decrypting
     
-    ```
+    ```bash
     python encryptdir.py decrypt -in ./folder-with-encrypted-files/ -out ./target-folder/
     ```
 
 1. Test encryption and decryption
     You can also test encryption and decryption.
 
-    ```
+    ```bash
     #mkdir input && insert some test files (optional)
     python encryptdir.py test
     ```
@@ -69,7 +69,33 @@ a python script to encrypt all files in a directory with a public rsa key.
     This encrypts and decrypts your test files. If ```./input/``` does not exists, the folder will be automatically created and some test data will be inserted.
 
 ## Parameters
-You can edit following parameters in *encryptdir.py*:
-* ```INPUTDIR="./input"```
-* ```OUTPUTDIR="./output"```
-* ```TMPDIR="./tmp"```
+In *encryptdir.py* you can customize following parameters:
+* Folders:
+
+  ```python
+  # default input folder only for encrypting
+  INPUTDIR="./input"
+  # default output folder only for encrypting
+  OUTPUTDIR="./output"
+  # default temp folder for en-/decrypting
+  TMPDIR="./tmp"
+  ```
+
+* Key files
+  
+  ```python
+  # location of rsa private key file. 
+  # Keep this file save! only needed for decryption!
+  DEFAULT_KEY_FILE="./mykey.pem"
+  # location of rsa public key file.
+  DEFAULT_PUB_KEY_FILE="./mykey.pem.pub"
+  ```
+
+* Key sizes
+
+  ```python
+  # File/key size for symmetric encryption
+  AES_KEY_FILE_SIZE=256
+  # RSA key size. Only needed for RSA key creation. (encryptdir.py gen-keys)
+  RSA_KEY_SIZE=4096
+  ```

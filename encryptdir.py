@@ -9,14 +9,22 @@ import shutil
 from subprocess import call
 
 
+# default input folder only for encrypting
 INPUTDIR="./input"
+# default output folder only for encrypting
 OUTPUTDIR="./output"
+# default temp folder for en-/decrypting
 TMPDIR="./tmp"
 
+# location of rsa private key file. 
+# Keep this file save! only needed for decryption!
 DEFAULT_KEY_FILE="./mykey.pem"
+# location of rsa public key file.
 DEFAULT_PUB_KEY_FILE="./mykey.pem.pub"
 
+# File/key size for symmetric encryption
 AES_KEY_FILE_SIZE=256
+# RSA key size. Only needed for RSA key creation. (encryptdir.py gen-keys)
 RSA_KEY_SIZE=4096
 
 # used symmetric encryption algorithm
