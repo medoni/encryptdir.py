@@ -51,7 +51,6 @@ a python script to encrypt all files in a directory with a public rsa key.
     -rw-r--r--  1 root  wheel        512 Dec 29 23:29 test-4.key.enc
     ```
 
-
 1. Decrypting
     
     ```bash
@@ -68,7 +67,7 @@ a python script to encrypt all files in a directory with a public rsa key.
 
     This encrypts and decrypts your test files. If ```./input/``` does not exists, the folder will be automatically created and some test data will be inserted.
 
-## Parameters
+## Customizing
 In *encryptdir.py* you can customize following parameters:
 * Folders:
 
@@ -112,3 +111,13 @@ In *encryptdir.py* you can customize following parameters:
     'cast5-cbc'
   ]
   ```
+
+## Commandline help
+
+```bash
+python encryptdir.py --help
+```
+or for specific command:
+```
+python encryptdir.py decrypt --help
+```
