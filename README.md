@@ -1,7 +1,7 @@
 encryptdir.py
 =============
 
-a python script to encrypt all files in a directory with public rsa key. 
+a python script to encrypt all files in a directory with a public rsa key. 
 
 ## Usage
 1. Generate a rsa key pair
@@ -58,4 +58,13 @@ a python script to encrypt all files in a directory with public rsa key.
 	python encryptdir.py decrypt -in ./folder-with-encrypted-files/ -out ./target-folder/
 	```
 
+1. Test encryption and decryption
+	You can also test encryption and decryption.
+
+	```
+	#mkdir input && insert some test files (optional)
+	python encryptdir.py test
+	```
+
+	This encrypts and decrypts your test files. If ```./input/``` does not exists, the folder will be automatically created and some test data will be inserted.
 
