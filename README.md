@@ -103,7 +103,7 @@ In *encryptdir.py* you can customize following parameters:
 * symmetric cipher routines
   Sym. cipher routines used for each file en-/decryption. [Support Types](https://www.openssl.org/docs/apps/enc.html#supported_ciphers)
 
-  ```
+  ```python
   # used symmetric cipher routines
   # see https://www.openssl.org/docs/apps/enc.html#supported_ciphers
   SYMMETRIC_ENCRYPTION_CASC = [
