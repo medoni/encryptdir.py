@@ -1,5 +1,6 @@
 
 import argparse
+import hashlib
 import os
 import random
 import re
@@ -53,6 +54,8 @@ def main():
 	gen_test_args = subparsers.add_parser('gen-test-files', help='generates some lorem ipsum test file')
 	gen_test_args.add_argument('count', metavar='number', type=int, help='Count of test files should be created')
 
+	test_args = subparsers.add_parser('test', help='Tests encrypting and decrypting')
+
 	args = parser.parse_args()
 	#print(args)
 	if args.command == 'clean':
@@ -65,6 +68,8 @@ def main():
 		_generate_priv_pub_key_pair(key_size=args.key_size, key_file=args.key_file)
 	elif args.command == 'gen-test-files':
 		_generate_test_data(number=args.count)
+	elif args.command == 'test':
+		test()
 	else:
 		raise Exception('Invalid command "{0}"'.format(args.command))
 
@@ -223,6 +228,48 @@ def decrypt_file(file, file_key, org_name, in_dir, out_dir):
 	with open(output_file, 'w') as stream:
 		call([ 'gzip', '-d', sym_inc_file, '--stdout' ], stdout=stream)
 	
+#======================================================
+def test():
+	if not os.path.exists(INPUTDIR):
+		os.makedirs(INPUTDIR)
+		_generate_test_data(5)
+
+	if not os.path.exists(DEFAULT_KEY_FILE):
+		_generate_priv_pub_key_pair()
+
+	encrypt_in = INPUTDIR
+	encrypt_out = OUTPUTDIR
+
+	decrypt_in = OUTPUTDIR
+	decrypt_out = 'output2'
+
+	encrypt()
+	decrypt(decrypt_in, decrypt_out)
+
+	#compare encrypt_in with decrypt_out
+	for file in os.listdir(encrypt_in):
+		en_file = '{0}/{1}'.format(encrypt_in, file)
+		de_file = '{0}/{1}'.format(decrypt_out, file)
+
+		if not os.path.exists(de_file):
+			print('File "{0} does not exists in "{1}"'.format(en_file, decrypt_out))
+			exit(1)
+
+
+		sha_in = _getHashFromFile(en_file)
+		sha_out = _getHashFromFile(de_file)
+		
+		if not sha_in == sha_out:
+			print('Input file: "{0}" are not equal with {1}"'.format(en_file, de_file))
+
+
+	print('All files matched successfully')
+
+#======================================================
+def _getHashFromFile(file):
+	with open(file, 'r') as file:
+		return hashlib.sha256(file.read().encode('utf-8')).hexdigest()
+
 
 
 #======================================================
