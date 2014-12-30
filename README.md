@@ -99,3 +99,16 @@ In *encryptdir.py* you can customize following parameters:
   # RSA key size. Only needed for RSA key creation. (encryptdir.py gen-keys)
   RSA_KEY_SIZE=4096
   ```
+
+* symmetric cipher routines
+  Sym. cipher routines used for each file en-/decryption. [Support Types](https://www.openssl.org/docs/apps/enc.html#supported_ciphers)
+
+  ```
+  # used symmetric cipher routines
+  # see https://www.openssl.org/docs/apps/enc.html#supported_ciphers
+  SYMMETRIC_ENCRYPTION_CASC = [
+    'aes-256-cbc',
+    'bf',
+    'cast5-cbc'
+  ]
+  ```

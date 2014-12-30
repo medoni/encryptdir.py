@@ -27,7 +27,8 @@ AES_KEY_FILE_SIZE=256
 # RSA key size. Only needed for RSA key creation. (encryptdir.py gen-keys)
 RSA_KEY_SIZE=4096
 
-# used symmetric encryption algorithm
+# used symmetric cipher routines
+# see https://www.openssl.org/docs/apps/enc.html#supported_ciphers
 SYMMETRIC_ENCRYPTION_CASC = [
 	'aes-256-cbc',
 	'bf',
